@@ -107,3 +107,5 @@ if "bairro" in df_rank.columns:
     st.plotly_chart(fig_rank, use_container_width=True)
 else:
     st.warning("A base não contém a coluna 'bairro'. Certifique-se de incluí-la para rankings por bairro.")
+
+#
