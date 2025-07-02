@@ -10,9 +10,9 @@ st.set_page_config(layout="wide", page_title="MAPA DE CRIMES RJ")
 st.markdown(
     """
     <style>
-    body {
-        background-color: #2C2C2C;
-        color: white;
+    html, body, .main {
+        background-color: #2C2C2C !important;
+        color: white !important;
     }
     h1, h2, h3, .stTitle, .stHeader {
         color: #F2C94C !important;
@@ -97,7 +97,7 @@ st.plotly_chart(fig, use_container_width=True)
 st.header("📊 Top 5 Unidades com Maior Número de Ocorrências")
 ranking_mapa = df_mapa.groupby("Unidade Territorial")["valor"].sum().reset_index().sort_values("valor", ascending=False)
 fig_rank_top5 = px.bar(
-    ranking_mapa.head(5).sort_values("valor", ascending=True),
+    ranking_mapa.head(5),
     x="valor", y="Unidade Territorial", orientation="h",
     title=f"Top 5 Unidades com Maior Número de Ocorrências ({tipo_crime_mapa})",
     color_discrete_sequence=["#F2C94C"]
