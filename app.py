@@ -64,6 +64,7 @@ else:
 
 agg_mapa = df_mapa.groupby("Unidade Territorial")["valor"].sum().reset_index()
 geo_mapa = geo.merge(agg_mapa, on="Unidade Territorial", how="left")
+geo_mapa["label"] = geo_mapa["Unidade Territorial"] + "<br>" + geo_mapa["valor"].round(2).astype(str) + " ocorrências por 10k hab."
 
 fig = px.choropleth_mapbox(
     geo_mapa,
@@ -74,7 +75,9 @@ fig = px.choropleth_mapbox(
     center={"lat": -22.9, "lon": -43.2},
     zoom=9.5,
     opacity=0.65,
-    title=f"Mapa de {tipo_crime_mapa if tipo_crime_mapa != 'Todos' else 'Todos os Crimes'} por Unidade Territorial"
+    title=f"Mapa de {tipo_crime_mapa if tipo_crime_mapa != 'Todos' else 'Todos os Crimes'} por Unidade Territorial",
+    hover_name="label",
+    color_continuous_scale="Reds"
 )
 fig.update_layout(margin={"r":0,"t":40,"l":0,"b":0})
 st.plotly_chart(fig, use_container_width=True)
@@ -110,5 +113,3 @@ fig_rank = px.bar(ranking.head(10), x="valor", y="Unidade Territorial", orientat
                   title=f"Top 10 Unidades Mais Seguras ({tipo_crime_rank})")
 fig_rank.update_layout(xaxis_title="Valor", yaxis_title="Unidade Territorial")
 st.plotly_chart(fig_rank, use_container_width=True)
-
-#
