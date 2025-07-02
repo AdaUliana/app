@@ -104,3 +104,36 @@ fig_rank_top5.update_layout(
 )
 st.plotly_chart(fig_rank_top5, use_container_width=True)
 
+# ---------- GLOSSÁRIO ----------
+st.header("ℹ️ Glossário e Explicações dos Indicadores")
+
+with st.expander("📌 Taxa por 10 mil habitantes"):
+    st.markdown("""
+    Este indicador representa a quantidade de ocorrências de um determinado tipo de crime a cada 10.000 habitantes na área analisada.
+
+    **Fórmula:**  
+    `taxa = (número de ocorrências / população) * 10.000`
+
+    Esse cálculo permite comparar áreas de diferentes tamanhos populacionais de forma proporcional.
+    """)
+
+with st.expander("🚨 Tipos de crime analisados"):
+    st.markdown("""
+    - **Homicídio doloso**: Quando há intenção de matar.
+    - **Lesão corporal seguida de morte**: Agressão que resulta em morte.
+    - **Latrocínio**: Roubo seguido de morte.
+    - **Estupro**: Violação sexual sem consentimento.
+    - **Roubo a transeunte**: Roubo cometido contra pedestres.
+    - **Roubo de veículo**: Subtração de veículos com uso de violência ou ameaça.
+    - **Roubo de rua**: Inclui roubo de celular, bolsa, entre outros em via pública.
+    - **Furto de veículos**: Subtração sem violência.
+    - **Ameaça**: Ato de intimidar alguém verbalmente ou fisicamente.
+    - **Pessoas desaparecidas**: Casos registrados de sumiço sem paradeiro conhecido.
+    """)
+
+with st.expander("🏙️ Unidade Territorial"):
+    st.markdown("""
+    Agrupamento de bairros com base na área de cobertura de uma Delegacia de Polícia (CISP).  
+    Utilizada para representar espacialmente a jurisdição policial nos mapas.
+    """)
+
