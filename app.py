@@ -10,10 +10,6 @@ st.set_page_config(layout="wide", page_title="MAPA DE CRIMES RJ")
 st.markdown(
     """
     <style>
-    html, body, .main {
-        background-color: #2C2C2C !important;
-        color: white !important;
-    }
     h1, h2, h3, .stTitle, .stHeader {
         color: #F2C94C !important;
         text-align: center !important;
@@ -104,9 +100,7 @@ fig_rank_top5 = px.bar(
 )
 fig_rank_top5.update_layout(
     xaxis_title="Valor", 
-    yaxis_title="Unidade Territorial",
-    plot_bgcolor="#2C2C2C",
-    paper_bgcolor="#2C2C2C",
-    font_color="white"
+    yaxis_title="Unidade Territorial"
 )
 st.plotly_chart(fig_rank_top5, use_container_width=True)
+
