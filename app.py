@@ -111,4 +111,4 @@ fig_rank = px.bar(ranking.head(10), x="valor", y="Unidade Territorial", orientat
 fig_rank.update_layout(xaxis_title="Valor", yaxis_title="Unidade Territorial")
 st.plotly_chart(fig_rank, use_container_width=True)
 
-
+#
