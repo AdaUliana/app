@@ -32,78 +32,78 @@ df, geojson = carregar_dados()
 # ---------- EXTRAIR BAIRROS DO GEOJSON ----------
 bairros_geojson = sorted({f["properties"].get("bairro") for f in geojson["features"] if f["properties"].get("bairro")})
 
-# ---------- SIDEBAR DE FILTROS ----------
 st.title("🔍 Análise Interativa de Criminalidade no Rio de Janeiro")
 
+# ---------- FILTROS MAPA DE CALOR ----------
+st.header("🗺️ Mapa de Calor por Bairro")
 col1, col2, col3, col4 = st.columns(4)
 with col1:
-    tipo_crime = st.selectbox("Tipo de Crime", ["Todos"] + [
+    tipo_crime_mapa = st.selectbox("Tipo de Crime (Mapa)", [
         'hom_doloso', 'lesao_corp_morte', 'latrocinio', 'estupro',
         'roubo_transeunte', 'roubo_veiculo', 'roubo_rua',
         'furto_veiculos', 'ameaca', 'pessoas_desaparecidas'
     ])
 with col2:
-    usar_taxa = st.checkbox("Exibir taxa por 10k hab.", value=True)
+    usar_taxa_mapa = st.checkbox("Exibir taxa por 10k hab. (Mapa)", value=True)
 with col3:
-    anos = sorted(df["ano"].dropna().unique())
-    anos_selecionados = st.multiselect("Ano(s)", ["Todos"] + anos, default=[anos[-1]])
+    anos_mapa = sorted(df["ano"].dropna().unique())
+    anos_sel_mapa = st.multiselect("Ano(s) (Mapa)", anos_mapa, default=[anos_mapa[-1]])
 with col4:
-    meses = sorted(df["mes"].dropna().unique())
-    meses_selecionados = st.multiselect("Mês(es)", ["Todos"] + meses, default=[meses[-1]])
+    meses_mapa = sorted(df["mes"].dropna().unique())
+    meses_sel_mapa = st.multiselect("Mês(es) (Mapa)", meses_mapa, default=[meses_mapa[-1]])
 
-bairros_selecionados = st.multiselect("Bairro(s)", ["Todos"] + bairros_geojson, default=["Todos"])
+coluna_mapa = f"Taxa_{tipo_crime_mapa}_por_10k" if usar_taxa_mapa else tipo_crime_mapa
+df_mapa = df[df["ano"].isin(anos_sel_mapa) & df["mes"].isin(meses_sel_mapa)].copy()
+df_mapa["valor"] = df_mapa[coluna_mapa]
 
-# ---------- FILTRAGEM ----------
-df_filt = df.copy()
-if "Todos" not in anos_selecionados:
-    df_filt = df_filt[df_filt["ano"].isin(anos_selecionados)]
-if "Todos" not in meses_selecionados:
-    df_filt = df_filt[df_filt["mes"].isin(meses_selecionados)]
+# Agregar por Unidade Territorial para aplicar aos bairros
+agg_bairro = df_mapa.groupby("Unidade Territorial")["valor"].sum().reset_index()
 
-# ---------- AGREGAR E PLOTAR MAPA ----------
-if tipo_crime != "Todos":
-    coluna = f"Taxa_{tipo_crime}_por_10k" if usar_taxa else tipo_crime
-    df_filt["total"] = df_filt[coluna]
-    agg = df_filt.groupby("cisp")["total"].sum().reset_index()
-    agg["cisp"] = agg["cisp"].astype(str)
+# Atribuir valores aos bairros do GeoJSON
+for f in geojson["features"]:
+    unidade = f["properties"].get("unidade_territorial")
+    val = agg_bairro.loc[agg_bairro["Unidade Territorial"] == unidade, "valor"]
+    f["properties"]["valor"] = float(val.values[0]) if not val.empty else None
 
-    for f in geojson["features"]:
-        cisp_codigo = str(f["properties"].get("CISP"))
-        taxa = agg.loc[agg["cisp"] == cisp_codigo, "total"]
-        f["properties"]["total"] = float(taxa.values[0]) if not taxa.empty else None
+fig = px.choropleth_mapbox(
+    geojson=geojson,
+    data_frame=agg_bairro,
+    locations="Unidade Territorial",
+    featureidkey="properties.unidade_territorial",
+    color="valor",
+    mapbox_style="carto-positron",
+    center={"lat": -22.9, "lon": -43.2},
+    zoom=9.5,
+    opacity=0.65,
+    title=f"Mapa de {coluna_mapa.replace('_', ' ').title()} por Bairro"
+)
+fig.update_layout(margin={"r":0,"t":40,"l":0,"b":0})
+st.plotly_chart(fig, use_container_width=True)
 
-    titulo = f"{coluna.replace('_', ' ').title()} – {', '.join(map(str, anos_selecionados))}/{', '.join(map(str, meses_selecionados))}"
-    fig = px.choropleth_mapbox(
-        geojson=geojson,
-        data_frame=agg,
-        locations="cisp",
-        featureidkey="properties.CISP",
-        color="total",
-        mapbox_style="carto-positron",
-        center={"lat": -22.9, "lon": -43.2},
-        zoom=9.5,
-        opacity=0.65,
-        title=titulo
-    )
-    fig.update_layout(margin={"r":0,"t":40,"l":0,"b":0})
-    st.plotly_chart(fig, use_container_width=True)
+# ---------- DASHBOARD: RANKING POR BAIRRO ----------
+st.header("📊 Ranking de Bairros Mais Seguros")
+col5, col6, col7, col8 = st.columns(4)
+with col5:
+    tipo_crime_rank = st.selectbox("Tipo de Crime (Ranking)", [
+        'hom_doloso', 'lesao_corp_morte', 'latrocinio', 'estupro',
+        'roubo_transeunte', 'roubo_veiculo', 'roubo_rua',
+        'furto_veiculos', 'ameaca', 'pessoas_desaparecidas'
+    ])
+with col6:
+    usar_taxa_rank = st.checkbox("Exibir taxa por 10k hab. (Ranking)", value=True)
+with col7:
+    anos_rank = sorted(df["ano"].dropna().unique())
+    anos_sel_rank = st.multiselect("Ano(s) (Ranking)", anos_rank, default=[anos_rank[-1]])
+
+coluna_rank = f"Taxa_{tipo_crime_rank}_por_10k" if usar_taxa_rank else tipo_crime_rank
+df_rank = df[df["ano"].isin(anos_sel_rank)].copy()
+df_rank["valor"] = df_rank[coluna_rank]
+
+if "bairro" in df_rank.columns:
+    ranking = df_rank.groupby(["bairro"])["valor"].sum().reset_index().sort_values("valor", ascending=True)
+    fig_rank = px.bar(ranking.head(10), x="valor", y="bairro", orientation="h",
+                      title=f"Top 10 Bairros Mais Seguros ({coluna_rank})")
+    fig_rank.update_layout(xaxis_title="Valor", yaxis_title="Bairro")
+    st.plotly_chart(fig_rank, use_container_width=True)
 else:
-    st.info("Selecione um tipo de crime para visualizar o mapa.")
-
-# ---------- DASHBOARD: RANKING DE UNIDADE TERRITORIAL ----------
-st.subheader("📊 Unidades Territoriais Mais Seguras (Ranking)")
-if tipo_crime != "Todos":
-    if "Unidade Territorial" in df_filt.columns:
-        ranking = df_filt.groupby(["ano", "Unidade Territorial"])[coluna].sum().reset_index()
-        fig_rank = px.bar(
-            ranking,
-            x="Unidade Territorial",
-            y=coluna,
-            color="ano",
-            barmode="group",
-            title=f"Ranking de {coluna.replace('_', ' ').title()} por Unidade Territorial"
-        )
-        fig_rank.update_layout(xaxis_title="Unidade Territorial", yaxis_title="Valor")
-        st.plotly_chart(fig_rank, use_container_width=True)
-    else:
-        st.warning("A coluna 'Unidade Territorial' não está disponível na base.")
+    st.warning("A base não contém a coluna 'bairro'. Certifique-se de incluí-la para rankings por bairro.")
