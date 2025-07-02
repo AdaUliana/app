@@ -48,14 +48,9 @@ with col4:
     meses = sorted(df["mes"].dropna().unique())
     meses_selecionados = st.multiselect("Mês(es)", meses, default=[meses[-1]])
 
-bairros = ["Todos"] + sorted(df["bairro"].dropna().unique())
-bairro = st.selectbox("Bairro (opcional)", bairros)
-
 # ---------- FILTRAGEM ----------
 coluna = f"Taxa_{tipo_crime}_por_10k" if usar_taxa else tipo_crime
 df_filt = df[df["ano"].isin(anos_selecionados) & df["mes"].isin(meses_selecionados)].copy()
-if bairro != "Todos":
-    df_filt = df_filt[df_filt["bairro"] == bairro]
 
 # ---------- AGREGAÇÃO ----------
 df_filt["total"] = df_filt[coluna]
