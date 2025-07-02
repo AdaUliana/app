@@ -5,16 +5,27 @@ import json
 import geopandas as gpd
 
 # ---------- CONFIGURAÇÃO DO TEMA ----------
-st.set_page_config(layout="wide", page_title="Mapa de Crimes RJ")
+st.set_page_config(layout="wide", page_title="MAPA DE CRIMES RJ")
 
 st.markdown(
     """
     <style>
-    body { background-color: #FAFAFA; color: #333333; }
-    .stButton>button { background-color: #F2C94C; color: #333333; }
+    body {
+        background-color: #2C2C2C;
+        color: white;
+    }
+    h1, h2, h3, .stTitle, .stHeader {
+        color: #F2C94C !important;
+        text-align: center !important;
+    }
+    .stButton>button {
+        background-color: #F2C94C;
+        color: #2C2C2C;
+    }
     .stPlotlyChart { padding: 0px !important; }
     </style>
-    """, unsafe_allow_html=True
+    """,
+    unsafe_allow_html=True
 )
 
 # ---------- DADOS ----------
@@ -29,7 +40,7 @@ def carregar_dados():
 
 df, geo = carregar_dados()
 
-st.title("🔍 Análise Interativa de Criminalidade no Rio de Janeiro")
+st.title("🔍 MAPA DE CRIMES RJ")
 
 # ---------- FILTROS MAPA DE CALOR ----------
 st.header("🗺️ Mapa de Calor por Unidade Territorial")
@@ -85,7 +96,17 @@ st.plotly_chart(fig, use_container_width=True)
 # ---------- DASHBOARD: RANKING SEGUINDO MAPA DE CALOR ----------
 st.header("📊 Top 5 Unidades com Maior Número de Ocorrências")
 ranking_mapa = df_mapa.groupby("Unidade Territorial")["valor"].sum().reset_index().sort_values("valor", ascending=False)
-fig_rank_top5 = px.bar(ranking_mapa.head(5), x="valor", y="Unidade Territorial", orientation="h",
-                       title=f"Top 5 Unidades com Maior Número de Ocorrências ({tipo_crime_mapa})")
-fig_rank_top5.update_layout(xaxis_title="Valor", yaxis_title="Unidade Territorial")
+fig_rank_top5 = px.bar(
+    ranking_mapa.head(5).sort_values("valor", ascending=True),
+    x="valor", y="Unidade Territorial", orientation="h",
+    title=f"Top 5 Unidades com Maior Número de Ocorrências ({tipo_crime_mapa})",
+    color_discrete_sequence=["#F2C94C"]
+)
+fig_rank_top5.update_layout(
+    xaxis_title="Valor", 
+    yaxis_title="Unidade Territorial",
+    plot_bgcolor="#2C2C2C",
+    paper_bgcolor="#2C2C2C",
+    font_color="white"
+)
 st.plotly_chart(fig_rank_top5, use_container_width=True)
