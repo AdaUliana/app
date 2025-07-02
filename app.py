@@ -104,6 +104,20 @@ fig_rank_top5.update_layout(
 )
 st.plotly_chart(fig_rank_top5, use_container_width=True)
 
+# ---------- EXPORTAÇÃO ----------
+st.subheader("📤 Exportar dados filtrados")
+@st.cache_data
+def converter_para_csv(df):
+    return df.to_csv(index=False).encode("utf-8-sig")
+
+csv_data = converter_para_csv(df_mapa)
+st.download_button(
+    label="⬇️ Baixar dados filtrados como CSV",
+    data=csv_data,
+    file_name="dados_filtrados.csv",
+    mime="text/csv"
+)
+
 # ---------- GLOSSÁRIO ----------
 st.header("ℹ️ Glossário e Explicações dos Indicadores")
 
@@ -136,4 +150,3 @@ with st.expander("🏙️ Unidade Territorial"):
     Agrupamento de bairros com base na área de cobertura de uma Delegacia de Polícia (CISP).  
     Utilizada para representar espacialmente a jurisdição policial nos mapas.
     """)
-
