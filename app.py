@@ -30,7 +30,7 @@ def carregar_dados():
 df, geojson = carregar_dados()
 
 # ---------- EXTRAIR BAIRROS DO GEOJSON ----------
-bairros_geojson = sorted({f["properties"].get("bairro") for f in geojson["features"] if f["properties"].get("bairro")})
+bairros_geojson = sorted({f["properties"].get("nome") for f in geojson["features"] if f["properties"].get("nome")})
 
 st.title("🔍 Análise Interativa de Criminalidade no Rio de Janeiro")
 
@@ -59,9 +59,9 @@ df_mapa["valor"] = df_mapa[coluna_mapa]
 # Agregar por Unidade Territorial para aplicar aos bairros
 agg_bairro = df_mapa.groupby("Unidade Territorial")["valor"].sum().reset_index()
 
-# Atribuir valores aos bairros do GeoJSON
+# Atribuir valores aos bairros do GeoJSON com base na coluna "Unidade Territorial"
 for f in geojson["features"]:
-    unidade = f["properties"].get("unidade_territorial")
+    unidade = f["properties"].get("Unidade Territorial")
     val = agg_bairro.loc[agg_bairro["Unidade Territorial"] == unidade, "valor"]
     f["properties"]["valor"] = float(val.values[0]) if not val.empty else None
 
@@ -69,7 +69,7 @@ fig = px.choropleth_mapbox(
     geojson=geojson,
     data_frame=agg_bairro,
     locations="Unidade Territorial",
-    featureidkey="properties.unidade_territorial",
+    featureidkey="properties.Unidade Territorial",
     color="valor",
     mapbox_style="carto-positron",
     center={"lat": -22.9, "lon": -43.2},
@@ -108,4 +108,3 @@ if "bairro" in df_rank.columns:
 else:
     st.warning("A base não contém a coluna 'bairro'. Certifique-se de incluí-la para rankings por bairro.")
 
-#
