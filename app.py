@@ -82,34 +82,10 @@ fig = px.choropleth_mapbox(
 fig.update_layout(margin={"r":0,"t":40,"l":0,"b":0})
 st.plotly_chart(fig, use_container_width=True)
 
-# ---------- DASHBOARD: RANKING POR UNIDADE ----------
-st.header("📊 Ranking de Unidades Territoriais Mais Seguras")
-col5, col6, col7 = st.columns(3)
-with col5:
-    tipo_crime_rank = st.selectbox("Tipo de Crime (Ranking)", ["Todos"] + [
-        'hom_doloso', 'lesao_corp_morte', 'latrocinio', 'estupro',
-        'roubo_transeunte', 'roubo_veiculo', 'roubo_rua',
-        'furto_veiculos', 'ameaca', 'pessoas_desaparecidas'
-    ])
-with col6:
-    usar_taxa_rank = st.checkbox("Exibir taxa por 10k hab. (Ranking)", value=True)
-with col7:
-    anos_rank = sorted(df["ano"].dropna().unique())
-    anos_sel_rank = st.multiselect("Ano(s) (Ranking)", ["Todos"] + anos_rank, default=[anos_rank[-1]])
-
-# ---------- PREPARAR DADOS RANKING ----------
-df_rank = df.copy()
-if "Todos" not in anos_sel_rank:
-    df_rank = df_rank[df_rank["ano"].isin(anos_sel_rank)]
-
-if tipo_crime_rank != "Todos":
-    coluna_rank = f"Taxa_{tipo_crime_rank}_por_10k" if usar_taxa_rank else tipo_crime_rank
-    df_rank["valor"] = df_rank[coluna_rank]
-else:
-    df_rank["valor"] = 0
-
-ranking = df_rank.groupby("Unidade Territorial")["valor"].sum().reset_index().sort_values("valor", ascending=True)
-fig_rank = px.bar(ranking.head(10), x="valor", y="Unidade Territorial", orientation="h",
-                  title=f"Top 10 Unidades Mais Seguras ({tipo_crime_rank})")
-fig_rank.update_layout(xaxis_title="Valor", yaxis_title="Unidade Territorial")
-st.plotly_chart(fig_rank, use_container_width=True)
+# ---------- DASHBOARD: RANKING SEGUINDO MAPA DE CALOR ----------
+st.header("📊 Top 5 Unidades com Maior Número de Ocorrências")
+ranking_mapa = df_mapa.groupby("Unidade Territorial")["valor"].sum().reset_index().sort_values("valor", ascending=False)
+fig_rank_top5 = px.bar(ranking_mapa.head(5), x="valor", y="Unidade Territorial", orientation="h",
+                       title=f"Top 5 Unidades com Maior Número de Ocorrências ({tipo_crime_mapa})")
+fig_rank_top5.update_layout(xaxis_title="Valor", yaxis_title="Unidade Territorial")
+st.plotly_chart(fig_rank_top5, use_container_width=True)
